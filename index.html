@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Buster</title>
+<style>
+/* === ORIGINAL CSS === */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:Georgia,serif;background:#0a0a0a;display:flex;justify-content:center;align-items:center;min-height:100vh;touch-action:none;overflow:hidden}
+.game{width:100%;max-width:450px;padding:15px}
+/* Header & scores */
+.header{display:flex;justify-content:space-between;padding:20px;background:linear-gradient(145deg,#2a2a2a,#1a1a1a);border:3px solid #444;border-radius:10px;margin-bottom:15px;box-shadow:0 5px 20px rgba(0,0,0,.7)}
+.title{font-family:Cinzel,serif;font-size:32px;font-weight:bold;color:#e0e0e0;text-shadow:2px 2px 4px #000;letter-spacing:3px;line-height:1.2}
+.title-gujarati{font-family:Cinzel,serif;font-size:18px;color:#b0b0b0;letter-spacing:2px;margin-top:2px}
+.score-panel{text-align:right}
+.score-label{font-size:11px;color:#999;text-transform:uppercase}
+.score{font-size:28px;font-weight:bold;color:#fff;text-shadow:0 0 10px rgba(255,255,255,.5)}
+.high{font-size:10px;color:#888;margin-top:2px}
+.rank{display:inline-block;padding:4px 12px;border-radius:15px;font-size:11px;font-weight:bold;margin-top:5px;letter-spacing:1px;text-transform:uppercase}
+.r0{background:linear-gradient(145deg,#0d3d0d,#051a05);color:#66ff66}
+.r1{background:linear-gradient(145deg,#0f4d0f,#072207);color:#77ff77}
+.r2{background:linear-gradient(145deg,#115d11,#0a2a0a);color:#88ff88}
+.r3{background:linear-gradient(145deg,#136d13,#0c320c);color:#99ff99}
+.r4{background:linear-gradient(145deg,#157d15,#0e3a0e);color:#aaffaa}
+.r5{background:linear-gradient(145deg,#177d17,#104210);color:#bbffbb}
+.r6{background:linear-gradient(135deg,#0a4d6b,#1e88b8,#4fb3d9,#0a4d6b);color:#000;text-shadow:0 0 15px rgba(79,179,217,1),0 0 25px rgba(30,136,184,.8);font-weight:900;border:2px solid #4fb3d9;animation:shimmer 3s infinite}
+@keyframes shimmer{0%,100%{box-shadow:0 0 20px rgba(79,179,217,.8)}50%{box-shadow:0 0 35px rgba(30,136,184,1)}}
+/* Board & cells */
+.board{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:#1a1a1a;padding:8px;border:3px solid #444;border-radius:8px;margin-bottom:15px;box-shadow:0 8px 25px rgba(0,0,0,.8)}
+.cell{aspect-ratio:1;background:#0f0f0f;border-radius:3px;border:1px solid #222;transition:all .2s}
+.cell.filled{background:linear-gradient(145deg,#e0e0e0,#c0c0c0);border:1px solid #fff;box-shadow:0 2px 6px rgba(255,255,255,.3)}
+.cell.ghost{background:rgba(224,224,224,.3);border:1px dashed #999}
+.cell.valid{background:rgba(100,255,100,.25);box-shadow:0 0 10px rgba(100,255,100,.4)}
+.cell.invalid{background:rgba(255,100,100,.25)}
+.cell.clear{animation:pop .4s forwards}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(0);opacity:0}}
+/* Pieces */
+.pieces{display:flex;gap:10px;padding:12px;background:linear-gradient(145deg,#2a2a2a,#1a1a1a);border:3px solid #444;border-radius:10px;min-height:110px}
+.piece-wrap{flex:1;display:flex;justify-content:center;align-items:center;padding:10px;background:#0f0f0f;border:2px solid #444;border-radius:8px;cursor:grab;transition:transform .1s;touch-action:none}
+.piece-wrap:active{cursor:grabbing}
+.piece-wrap.dragging{opacity:.3}
+.piece{display:grid;gap:2px;pointer-events:none}
+.pc{width:20px;height:20px;background:linear-gradient(145deg,#e0e0e0,#c0c0c0);border-radius:3px;border:1px solid #fff}
+/* Overlays */
+.over{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.95);display:none;justify-content:center;align-items:center;z-index:100}
+.over.show{display:flex}
+.box{background:linear-gradient(145deg,#2a2a2a,#1a1a1a);padding:40px;border:3px solid #555;border-radius:15px;text-align:center;max-width:450px;max-height:90vh;overflow-y:auto}
+.box-title{font-size:36px;color:#e0e0e0;margin-bottom:20px;letter-spacing:2px}
+.final{font-size:48px;color:#fff;margin:20px 0}
+.btn{padding:15px 40px;font-size:18px;background:linear-gradient(145deg,#444,#222);color:#e0e0e0;border:2px solid #666;border-radius:10px;cursor:pointer;font-family:Georgia,serif;font-weight:bold;margin:5px}
+.btn:hover{background:linear-gradient(145deg,#555,#333)}
+.btn-small{padding:8px 16px;font-size:14px}
+.combo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;font-weight:bold;color:#fff;text-shadow:0 0 20px #fff;opacity:0;pointer-events:none;z-index:50;transition:opacity .3s}
+.input{padding:12px;font-size:16px;border:2px solid #444;border-radius:8px;background:#0f0f0f;color:#fff;width:100%;margin-bottom:15px;font-family:Georgia,serif}
+.info{font-size:12px;color:#888;margin:10px 0}
+.user-bar{position:fixed;top:15px;left:15px;background:rgba(0,0,0,.9);padding:10px 15px;border-radius:8px;z-index:10;color:#e0e0e0;font-size:13px}
+.menu-btn{position:fixed;top:15px;right:15px;background:rgba(0,0,0,.9);padding:10px 15px;border-radius:8px;z-index:10;color:#e0e0e0;font-size:24px;cursor:pointer}
+/* Leaderboard */
+.lb{margin-top:20px;text-align:left;max-height:400px;overflow-y:auto}
+.lb-item{padding:10px;background:#1a1a1a;border-radius:5px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.lb-item.me{background:#2a3a2a;border:1px solid #4a6a4a}
+.lb-item.friend{background:#1a1a2a;border:1px solid #4a4a6a}
+.lb-name{color:#e0e0e0;flex:1}
+.lb-score{color:#fff;font-weight:bold;margin-left:10px}
+.search-box{margin:20px 0}
+.friend-list{margin-top:15px}
+.friend-item{padding:8px;background:#1a1a1a;border-radius:5px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center}
+.remove-btn{background:#4d0000;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px}
+.tabs{display:flex;gap:10px;margin-bottom:20px}
+.tab{flex:1;padding:10px;background:#1a1a1a;border:2px solid #444;border-radius:8px;cursor:pointer;text-align:center;font-size:14px;color:#aaa}
+.tab.active{background:#2a2a2a;border-color:#666;color:#fff}
+</style>
+</head>
+<body>
+
+<div class="game" id="g" style="display:none">
+<div class="header">
+<div><div class="title">BUSTER</div><div class="title-gujarati">બસ્ટર</div></div>
+<div class="score-panel"><div class="score-label">Score</div><div class="score" id="sc">0</div><div class="high">Best: <span id="hi">0</span></div><div class="rank" id="rk">CRACKED</div></div>
+</div>
+<div class="board" id="bd"></div>
+<div class="pieces" id="pc"></div>
+<div class="combo" id="cb"></div>
+</div>
+
+<div class="user-bar" id="ub" style="display:none"></div>
+<div class="menu-btn" id="mb" style="display:none">☰</div>
+
+<div class="over show" id="lg">
+<div class="box">
+<div class="box-title">BUSTER</div>
+<div class="title-gujarati" style="margin-bottom:20px">બસ્ટર</div>
+<input type="text" class="input" id="nm" placeholder="Enter your name" maxlength="20">
+<button class="btn" id="st">START GAME</button>
+<button class="btn" id="gl">SIGN IN WITH GOOGLE</button>
+<div class="info" id="uid"></div>
+</div>
+</div>
+
+<div class="over" id="ov">
+<div class="box">
+<div class="box-title">GAME OVER</div>
+<div class="final" id="fn">0</div>
+<div class="rank" id="frk">CRACKED</div>
+<button class="btn" id="rs">PLAY AGAIN</button>
+<button class="btn" id="lb">LEADERBOARD</button>
+</div>
+</div>
+
+<div class="over" id="lbs">
+<div class="box">
+<div class="box-title">LEADERBOARD</div>
+<div class="tabs">
+<div class="tab active" id="tg">GLOBAL</div>
+<div class="tab" id="tf">FRIENDS</div>
+</div>
+<div class="search-box">
+<input type="text" class="input" id="su" placeholder="Enter friend's UID to add">
+<button class="btn btn-small" id="af">ADD FRIEND</button>
+<div class="info">Your UID: <strong id="mu"></strong> (Share with friends!)</div>
+</div>
+<div id="fls" style="display:none">
+<div style="color:#aaa;font-size:14px;margin-bottom:10px">Your Friends:</div>
+<div class="friend-list" id="fl"></div>
+</div>
+<div class="lb" id="ll"></div>
+<button class="btn" id="bk">BACK</button>
+</div>
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// FIREBASE INIT
+firebase.initializeApp({
+  apiKey: "AIzaSyDwo9UxfYpDb19VV_ULdmeSGv42Bw784U4",
+  authDomain: "buster-game.firebaseapp.com",
+  projectId: "buster-game",
+  storageBucket: "buster-game.firebasestorage.app",
+  messagingSenderId: "994068443466",
+  appId: "1:994068443466:web:14c834e80f0857497d51b3"
+});
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// MOBILE-SAFE GOOGLE LOGIN
+document.getElementById('gl').onclick = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithRedirect(provider);
+};
+auth.getRedirectResult()
+.then(result => {
+  if(result.user){
+    const user = result.user;
+    u = { n: user.displayName, id: user.uid, s:0, m:false };
+    localStorage.setItem('bU', JSON.stringify(u));
+    document.getElementById('uid').textContent = 'UID: '+u.id;
+    db.collection('users').doc(u.id).set({ name:u.n, score:0, friends:[] }, {merge:true});
+    setTimeout(stG,500);
+  }
+}).catch(err=>console.error('Google login failed:',err));
+
+// MANUAL LOGIN
+document.getElementById('st').onclick = () => {
+  const n = document.getElementById('nm').value.trim();
+  if(!n){alert('Enter name!');return;}
+  const id = 'UID'+Math.random().toString(36).substring(2,10).toUpperCase();
+  u = { n,id,s:0,m:false };
+  localStorage.setItem('bU',JSON.stringify(u));
+  document.getElementById('uid').textContent = 'UID: '+id;
+  db.collection('users').doc(u.id).set({ name:u.n, score:0, friends:[] }, {merge:true});
+  setTimeout(stG,500);
+};
+
+// === REST OF YOUR GAME LOGIC HERE ===
+// Drag/drop, scoring, clearing lines, combo, leaderboard, friends, etc.
+// (You already have the original game JS code — integrate it after this point)
+</script>
+</body>
+</html>
