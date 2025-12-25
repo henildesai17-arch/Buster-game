@@ -4,209 +4,209 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Buster - બસ્ટર</title>
+
 <style>
-/* (All your CSS from previous code here, unchanged) */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:Georgia,serif;background:#0a0a0a;display:flex;justify-content:center;align-items:center;min-height:100vh;touch-action:none;overflow:hidden}
+.game{width:100%;max-width:450px;padding:15px}
+.header{display:flex;justify-content:space-between;padding:20px;background:linear-gradient(145deg,#2a2a2a,#1a1a1a);border:3px solid #444;border-radius:10px;margin-bottom:15px}
+.title{font-family:Cinzel;font-size:32px;color:#e0e0e0}
+.title-gujarati{font-size:18px;color:#aaa}
+.score{font-size:28px;color:#fff}
+.rank{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:bold}
+.r0{background:#123;color:#6f6}
+.r1{background:#234;color:#7f7}
+.r2{background:#345;color:#8f8}
+.r3{background:#456;color:#9f9}
+.r4{background:#567;color:#afa}
+.r5{background:#678;color:#bfb}
+.r6{background:#79c;color:#000}
+.board{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:#111;padding:8px;border-radius:8px}
+.cell{aspect-ratio:1;background:#0f0f0f;border:1px solid #222}
+.cell.filled{background:#ddd}
+.pieces{display:flex;gap:10px;margin-top:15px}
+.piece-wrap{flex:1;display:flex;justify-content:center;align-items:center;background:#111;padding:10px}
+.piece{display:grid;gap:2px}
+.pc{width:20px;height:20px;background:#eee}
+.over{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center}
+.over.show{display:flex}
+.box{background:#222;padding:30px;border-radius:10px;text-align:center}
+.btn{padding:12px 30px;margin-top:10px;font-size:16px}
+.google-btn{background:#fff;color:#000;padding:12px 25px}
+.user-bar{position:fixed;top:10px;left:10px;color:#fff}
+.menu-btn{position:fixed;top:10px;right:10px;color:#fff;font-size:22px}
 </style>
 </head>
+
 <body>
+
 <div class="game" id="g" style="display:none">
-  <!-- Header, Board, Pieces, Combo elements as before -->
+  <div class="header">
+    <div>
+      <div class="title">BUSTER</div>
+      <div class="title-gujarati">બસ્ટર</div>
+    </div>
+    <div>
+      <div class="score" id="sc">0</div>
+      <div class="rank" id="rk">CRACKED</div>
+    </div>
+  </div>
+  <div class="board" id="bd"></div>
+  <div class="pieces" id="pc"></div>
 </div>
-<div class="user-bar" id="ub" style="display:none"></div>
-<div class="menu-btn" id="mb" style="display:none">☰</div>
+
+<div class="user-bar" id="ub"></div>
+<div class="menu-btn" id="mb">☰</div>
+
 <div class="over show" id="lg">
-  <!-- Login modal (Google + Guest) -->
+  <div class="box">
+    <h2>BUSTER</h2>
+    <button class="google-btn" id="gsi">Sign in with Google</button><br>
+    <button class="btn" id="gst">Play as Guest</button>
+  </div>
 </div>
+
 <div class="over" id="ov">
-  <!-- Game over modal -->
-</div>
-<div class="over" id="lbs">
-  <!-- Leaderboard modal -->
+  <div class="box">
+    <h2>GAME OVER</h2>
+    <div id="fn">0</div>
+    <div class="rank" id="frk"></div>
+    <button class="btn" id="rs">PLAY AGAIN</button>
+  </div>
 </div>
 
 <script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import {getAuth,signInWithPopup,GoogleAuthProvider,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import {getDatabase,ref,set,get,query,orderByChild,limitToLast} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getDatabase,
+  ref,
+  set,
+  get
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// --- Firebase config ---
-const cfg = {
-  apiKey:"AIzaSyDwo9UxfYpDb19VV_ULdmeSGv42Bw784U4",
-  authDomain:"buster-game.firebaseapp.com",
-  databaseURL:"https://buster-game-default-rtdb.firebaseio.com",
-  projectId:"buster-game",
-  storageBucket:"buster-game.firebasestorage.app",
-  messagingSenderId:"994068443466",
-  appId:"1:994068443466:web:14c834e80f0857497d51b3"
+const firebaseConfig={
+ apiKey:"AIzaSyDwo9UxfYpDb19VV_ULdmeSGv42Bw784U4",
+ authDomain:"buster-game.firebaseapp.com",
+ databaseURL:"https://buster-game-default-rtdb.firebaseio.com",
+ projectId:"buster-game",
+ storageBucket:"buster-game.appspot.com",
+ messagingSenderId:"994068443466",
+ appId:"1:994068443466:web:14c834e80f0857497d51b3"
 };
 
-const app = initializeApp(cfg);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const provider = new GoogleAuthProvider();
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+const provider=new GoogleAuthProvider();
 
-// --- Game constants ---
-const SZ = 8;
-const SH = [
-  [[1]],[[1,1]],[[1],[1]],[[1,1,1]],[[1],[1],[1]],[[1,1],[1,1]],
-  [[1,1,1],[1,0,0]],[[1,1,1],[0,0,1]],[[1,1,1],[0,1,0]],[[1,1,0],[0,1,1]],
-  [[0,1,1],[1,1,0]],[[1,1,1,1]],[[1],[1],[1],[1]],[[1,1,1],[1,0,1]],
-  [[1,1,1,1,1]],[[1,1,1],[1,1,0]],[[1,1,1],[0,1,1]],[[1,0],[1,1],[1,0]],
-  [[0,1],[1,1],[0,1]],[[1,1,1,1],[1,0,0,0]],[[1,1,1,1],[0,0,0,1]],
-  [[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1],[1,0],[1,0]],[[1,1],[0,1],[0,1]]
-];
-const RK = [
-  {n:'CRACKED',s:0,c:'r0'},
-  {n:'CHOPPED',s:150,c:'r1'},
-  {n:'LIL BRO',s:400,c:'r2'},
-  {n:'LEBRON',s:800,c:'r3'},
-  {n:'GOAT',s:1400,c:'r4'},
-  {n:'MESSIAH',s:2200,c:'r5'},
-  {n:'EXOCOSMIC',s:3500,c:'r6'}
+const SZ=8;
+const SH=[[[1]],[[1,1]],[[1],[1]],[[1,1,1]],[[1],[1],[1]]];
+const RK=[
+ {n:'CRACKED',s:0,c:'r0'},
+ {n:'CHOPPED',s:150,c:'r1'},
+ {n:'LIL BRO',s:400,c:'r2'},
+ {n:'LEBRON',s:800,c:'r3'},
+ {n:'GOAT',s:1400,c:'r4'},
+ {n:'MESSIAH',s:2200,c:'r5'},
+ {n:'EXOCOSMIC',s:3500,c:'r6'}
 ];
 
-let b,s,h,cr,nx,cb,lt,dg=null,u=null;
-let exoCounter = 0; // EXOCOSMIC numbering
+let b,s,u;
 
-// --- Auth helper ---
-function isM(name,email){
-  return email==='henildesai17@gmail.com' || name.toLowerCase()==='henil';
+function isMartian(name,email){
+ return email==="henildesai17@gmail.com"||name?.toLowerCase()==="henil";
 }
 
-// --- Get rank based on score ---
-function gR(score,m){
-  if(m) return {n:'MARTIAN',s:99999,c:'r6'};
-  for(let i=RK.length-1;i>=0;i--) if(score>=RK[i].s) return RK[i];
-  return RK[0];
+function getRank(sc){
+ if(u.m) return {n:"MARTIAN",c:"r6"};
+ for(let i=RK.length-1;i>=0;i--) if(sc>=RK[i].s) return RK[i];
+ return RK[0];
 }
 
-// --- Update rank display ---
-function uR(){
-  const r = gR(s,u.m);
-  let rankName = r.n;
-  if(rankName==='EXOCOSMIC') exoCounter++;
-  if(rankName==='EXOCOSMIC') rankName += ` ${exoCounter}`;
-  document.getElementById('rk').textContent = rankName;
-  document.getElementById('rk').className = 'rank '+r.c;
-}
-
-// --- Auth state ---
 onAuthStateChanged(auth,user=>{
-  if(user){
-    u = {id:user.uid,n:user.displayName||'Player',p:user.photoURL,email:user.email,m:isM(user.displayName||'',user.email)};
-    stG();
-  }
+ if(user){
+  u={id:user.uid,n:user.displayName,email:user.email,m:isMartian(user.displayName,user.email)};
+  start();
+ }
 });
 
-// --- Sign in / Guest ---
-document.getElementById('gsi').onclick=async()=>{
-  try{
-    const result = await signInWithPopup(auth,provider);
-    if(result.user){
-      u = {id:result.user.uid,n:result.user.displayName||'Player',p:result.user.photoURL,email:result.user.email,m:isM(result.user.displayName||'',result.user.email)};
-      stG();
-    }
-  }catch(e){alert('Sign in failed! Try guest mode.'); console.log(e);}
-};
-document.getElementById('gst').onclick=()=>{
-  const guestId='guest_'+Date.now();
-  const guestName='Guest';
-  u={id:guestId,n:guestName,p:null,email:null,m:isM('Guest','')};
-  stG();
+document.getElementById("gsi").onclick=()=>signInWithRedirect(auth,provider);
+
+getRedirectResult(auth).then(res=>{
+ if(res?.user){
+  const usr=res.user;
+  u={id:usr.uid,n:usr.displayName,email:usr.email,m:isMartian(usr.displayName,usr.email)};
+  start();
+ }
+});
+
+document.getElementById("gst").onclick=()=>{
+ u={id:"guest_"+Date.now(),n:"Guest",m:false};
+ start();
 };
 
-// --- Show game ---
-function stG(){
-  document.getElementById('lg').classList.remove('show');
-  document.getElementById('g').style.display='block';
-  document.getElementById('ub').style.display='flex';
-  document.getElementById('mb').style.display='block';
-  document.getElementById('ub').innerHTML=u.p?`<img src="${u.p}" class="user-photo"> ${u.n}`:`👤 ${u.n}`;
-  ini();
+function start(){
+ document.getElementById("lg").classList.remove("show");
+ document.getElementById("g").style.display="block";
+ document.getElementById("ub").textContent=u.n;
+ init();
 }
 
-// --- Initialize game, board, score, etc ---
-async function ini(){
-  // Initialize empty board
-  b = Array(SZ).fill().map(()=>Array(SZ).fill(0));
-  s = 0;
-  try{
-    const snap = await get(ref(db,`scores/${u.id}`));
-    h = u.m?99999:(snap.exists()?snap.val().s:0);
-  }catch(e){ h=0; }
-  cb = 0; lt = 0;
-  document.getElementById('hi').textContent = h;
-  document.getElementById('sc').textContent = 0;
-  uR();
-
-  // Create cells
-  const bd = document.getElementById('bd');
-  bd.innerHTML = '';
-  for(let i=0;i<SZ*SZ;i++){
-    const c=document.createElement('div'); c.className='cell'; c.dataset.i=i;
-    bd.appendChild(c);
-  }
-
-  // Generate pieces
-  gP();
-  dr();
+async function init(){
+ b=Array(SZ).fill().map(()=>Array(SZ).fill(0));
+ s=0;
+ document.getElementById("sc").textContent=s;
+ updateRank();
+ drawBoard();
+ genPieces();
 }
 
-// --- Generate pieces ---
-function rn(){const arr=SH; return JSON.parse(JSON.stringify(arr[Math.floor(Math.random()*arr.length)]));}
-function gP(){cr=[rn(),rn(),rn()]; nx=[rn(),rn(),rn()]; dP();}
-
-// --- Draw pieces ---
-function mP(sh){const p=document.createElement('div');p.className='piece';p.style.gridTemplateColumns=`repeat(${sh[0].length},1fr)`;sh.forEach(r=>r.forEach(c=>{const pc=document.createElement('div');if(c)pc.className='pc';else pc.style.visibility='hidden';p.appendChild(pc)}));return p;}
-function dP(){const c=document.getElementById('pc');c.innerHTML='';cr.forEach((sh,i)=>{if(!sh)return;const w=document.createElement('div');w.className='piece-wrap';w.dataset.idx=i;w.appendChild(mP(sh));c.appendChild(w)});sD();}
-
-// --- Add event listeners for drag & drop ---
-function sD(){document.querySelectorAll('.piece-wrap').forEach(w=>{w.addEventListener('mousedown',stD);w.addEventListener('touchstart',stD,{passive:false})});}
-
-// --- Drag & Drop handlers ---
-function stD(e){const w=e.currentTarget,ix=parseInt(w.dataset.idx);if(!cr[ix])return;e.preventDefault();const iT=e.type==='touchstart',cX=iT?e.touches[0].clientX:e.clientX,cY=iT?e.touches[0].clientY:e.clientY;w.classList.add('dragging');dg={ix,sh:cr[ix],w,oY:80};chP(cX,cY-dg.oY);if(iT){document.addEventListener('touchmove',oD,{passive:false});document.addEventListener('touchend',eD)}else{document.addEventListener('mousemove',oD);document.addEventListener('mouseup',eD)}}
-function oD(e){if(!dg)return;e.preventDefault();const iT=e.type==='touchmove',cX=iT?e.touches[0].clientX:e.clientX,cY=iT?e.touches[0].clientY:e.clientY;chP(cX,cY-(iT?dg.oY:0))}
-function eD(e){if(!dg)return;const iT=e.type==='touchend',cX=iT?e.changedTouches[0].clientX:e.clientX,cY=iT?e.changedTouches[0].clientY:e.clientY,aY=cY-(iT?dg.oY:0);const bE=document.getElementById('bd'),bR=bE.getBoundingClientRect();if(cX>=bR.left&&cX<=bR.right&&aY>=bR.top&&aY<=bR.bottom){const cW=bR.width/SZ,cH=bR.height/SZ,cl=Math.floor((cX-bR.left)/cW),rw=Math.floor((aY-bR.top)/cH);if(cn(dg.sh,rw,cl)){pl(dg.sh,rw,cl,dg.ix);if(navigator.vibrate)navigator.vibrate(30)}}dg.w.classList.remove('dragging');dg=null;document.removeEventListener('mousemove',oD);document.removeEventListener('mouseup',eD);document.removeEventListener('touchmove',oD);document.removeEventListener('touchend',eD);clG();}
-
-// --- Collision and placement ---
-function uG(r,c){clG();if(!dg)return;const sh=dg.sh,v=cn(sh,r,c);for(let i=0;i<sh.length;i++)for(let j=0;j<sh[i].length;j++)if(sh[i][j]){const cI=(r+i)*SZ+(c+j);const cl=document.querySelector(`[data-i="${cI}"]`);if(cl){cl.classList.add('ghost');cl.classList.add(v?'valid':'invalid')}}}
-function clG(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('ghost','valid','invalid'))}
-function cn(sh,r,c){for(let i=0;i<sh.length;i++)for(let j=0;j<sh[i].length;j++)if(sh[i][j]){const br=r+i,bc=c+j;if(br>=SZ||bc>=SZ||br<0||bc<0||b[br][bc])return false}return true}
-function pl(sh,r,c,ix){for(let i=0;i<sh.length;i++)for(let j=0;j<sh[i].length;j++)if(sh[i][j])b[r+i][c+j]=1;cr[ix]=null;cl();if(cr.every(p=>!p)){cr=[...nx];nx=[rn(),rn(),rn()]}dP();dr();if(ov())en()}
-function cl(){const rw=[],cl=[];for(let r=0;r<SZ;r++)if(b[r].every(c=>c))rw.push(r);for(let c=0;c<SZ;c++)if(b.every(r=>r[c]))cl.push(c);const cls=new Set();rw.forEach(r=>{for(let c=0;c<SZ;c++)cls.add(r*SZ+c)});cl.forEach(c=>{for(let r=0;r<SZ;r++)cls.add(r*SZ+c)});if(cls.size>0){cls.forEach(i=>document.querySelector(`[data-i="${i}"]`).classList.add('clear'));setTimeout(()=>{rw.forEach(r=>b[r].fill(0));cl.forEach(c=>{for(let r=0;r<SZ;r++)b[r][c]=0});const ln=rw.length+cl.length,nw=Date.now();cb=nw-lt<2000?cb+1:1;lt=nw;s+=ln*10+(cb>1?(cb-1)*20:0);if(cb>1)shC();if(s>h&&!u.m){h=s;document.getElementById('hi').textContent=h}document.getElementById('sc').textContent=s;uR();dr();if(navigator.vibrate)navigator.vibrate(40)},300)}else cb=0}
-function shC(){const e=document.getElementById('cb');e.textContent=`${cb}x COMBO!`;e.style.opacity=1;setTimeout(()=>e.style.opacity=0,1000)}
-function dr(){document.querySelectorAll('.cell').forEach((c,i)=>{const r=Math.floor(i/SZ),cl=i%SZ;c.className='cell';if(b[r][cl])c.classList.add('filled')})}
-function ov(){for(let p of cr){if(!p)continue;for(let r=0;r<SZ;r++)for(let c=0;c<SZ;c++)if(cn(p,r,c))return false}return true}
-
-// --- Game over & save ---
-async function en(){document.getElementById('fn').textContent=s;const r=gR(s,u.m);document.getElementById('frk').textContent=r.n;document.getElementById('frk').className='rank '+r.c;await svS();document.getElementById('ov').classList.add('show')}
-async function svS(){const fS=u.m?s:Math.max(s,h);try{await set(ref(db,`scores/${u.id}`),{n:u.n,s:fS,m:u.m,t:Date.now()})}catch(e){}}
-
-// --- Leaderboard ---
-async function rL(){
-  const ls=document.getElementById('ll'); ls.innerHTML='<div class="loading">Loading...</div>';
-  try{
-    const q=query(ref(db,'scores'),orderByChild('s'),limitToLast(50));
-    const snap=await get(q);
-    const sc=[];
-    snap.forEach(c=>sc.push(c.val()));
-    sc.sort((a,b)=>b.s-a.s);
-    ls.innerHTML='';
-    sc.forEach((it,i)=>{
-      const d=document.createElement('div'); d.className='lb-item'+(it.n===u.n?' me':'');
-      const r=gR(it.s,it.m);
-      let rankDisplay = r.n;
-      if(r.n==='EXOCOSMIC') rankDisplay += ` ${i+1}`;
-      d.innerHTML=`<span class="lb-name">${i+1}. ${it.n} <span class="rank ${r.c}" style="font-size:9px;padding:2px 6px">${rankDisplay}</span></span><span class="lb-score">${it.s}</span>`;
-      ls.appendChild(d);
-    })
-  }catch(e){ls.innerHTML='<div class="info">Error loading leaderboard</div>'}
+function updateRank(){
+ const r=getRank(s);
+ document.getElementById("rk").textContent=r.n;
+ document.getElementById("rk").className="rank "+r.c;
 }
 
-// --- Buttons ---
-document.getElementById('rs').onclick=()=>{document.getElementById('ov').classList.remove('show'); ini()};
-document.getElementById('lb').onclick=()=>{document.getElementById('ov').classList.remove('show'); rL(); document.getElementById('lbs').classList.add('show')};
-document.getElementById('bk').onclick=()=>document.getElementById('lbs').classList.remove('show');
+function drawBoard(){
+ const bd=document.getElementById("bd");
+ bd.innerHTML="";
+ for(let i=0;i<SZ*SZ;i++){
+  const d=document.createElement("div");
+  d.className="cell";
+  bd.appendChild(d);
+ }
+}
+
+function genPieces(){
+ const pc=document.getElementById("pc");
+ pc.innerHTML="";
+ SH.slice(0,3).forEach(sh=>{
+  const w=document.createElement("div");
+  w.className="piece-wrap";
+  const p=document.createElement("div");
+  p.className="piece";
+  sh.forEach(r=>r.forEach(c=>{
+   const d=document.createElement("div");
+   if(c)d.className="pc"; else d.style.visibility="hidden";
+   p.appendChild(d);
+  }));
+  w.appendChild(p);
+  pc.appendChild(w);
+ });
+}
+
+document.getElementById("rs").onclick=()=>{
+ document.getElementById("ov").classList.remove("show");
+ init();
+};
 </script>
 </body>
 </html>
