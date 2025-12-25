@@ -4,209 +4,144 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Buster - બસ્ટર</title>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:Georgia,serif;background:#0a0a0a;display:flex;justify-content:center;align-items:center;min-height:100vh;touch-action:none;overflow:hidden}
 .game{width:100%;max-width:450px;padding:15px}
-.header{display:flex;justify-content:space-between;padding:20px;background:linear-gradient(145deg,#2a2a2a,#1a1a1a);border:3px solid #444;border-radius:10px;margin-bottom:15px}
-.title{font-family:Cinzel;font-size:32px;color:#e0e0e0}
-.title-gujarati{font-size:18px;color:#aaa}
-.score{font-size:28px;color:#fff}
-.rank{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:bold}
-.r0{background:#123;color:#6f6}
-.r1{background:#234;color:#7f7}
-.r2{background:#345;color:#8f8}
-.r3{background:#456;color:#9f9}
-.r4{background:#567;color:#afa}
-.r5{background:#678;color:#bfb}
-.r6{background:#79c;color:#000}
-.board{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:#111;padding:8px;border-radius:8px}
-.cell{aspect-ratio:1;background:#0f0f0f;border:1px solid #222}
-.cell.filled{background:#ddd}
-.pieces{display:flex;gap:10px;margin-top:15px}
-.piece-wrap{flex:1;display:flex;justify-content:center;align-items:center;background:#111;padding:10px}
-.piece{display:grid;gap:2px}
-.pc{width:20px;height:20px;background:#eee}
-.over{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center}
+.header{display:flex;justify-content:space-between;padding:20px;background:linear-gradient(145deg,#2a2a2a,#1a1a1a);border:3px solid #444;border-radius:10px;margin-bottom:15px;box-shadow:0 5px 20px rgba(0,0,0,.7)}
+.title{font-family:Cinzel,serif;font-size:32px;font-weight:bold;color:#e0e0e0;text-shadow:2px 2px 4px #000;letter-spacing:3px;line-height:1.2}
+.title-gujarati{font-family:Cinzel,serif;font-size:18px;color:#b0b0b0;letter-spacing:2px;margin-top:2px}
+.score-panel{text-align:right}
+.score-label{font-size:11px;color:#999;text-transform:uppercase}
+.score{font-size:28px;font-weight:bold;color:#fff;text-shadow:0 0 10px rgba(255,255,255,.5)}
+.high{font-size:10px;color:#888;margin-top:2px}
+.rank{display:inline-block;padding:4px 12px;border-radius:15px;font-size:11px;font-weight:bold;margin-top:5px;letter-spacing:1px;text-transform:uppercase}
+.r0{background:linear-gradient(145deg,#0d3d0d,#051a05);color:#66ff66}
+.r1{background:linear-gradient(145deg,#0f4d0f,#072207);color:#77ff77}
+.r2{background:linear-gradient(145deg,#115d11,#0a2a0a);color:#88ff88}
+.r3{background:linear-gradient(145deg,#136d13,#0c320c);color:#99ff99}
+.r4{background:linear-gradient(145deg,#157d15,#0e3a0e);color:#aaffaa}
+.r5{background:linear-gradient(145deg,#177d17,#104210);color:#bbffbb}
+.r6{background:linear-gradient(135deg,#0a4d6b,#1e88b8,#4fb3d9,#0a4d6b);color:#000;text-shadow:0 0 15px rgba(79,179,217,1),0 0 25px rgba(30,136,184,.8);font-weight:900;border:2px solid #4fb3d9;animation:shimmer 3s infinite}
+@keyframes shimmer{0%,100%{box-shadow:0 0 20px rgba(79,179,217,.8)}50%{box-shadow:0 0 35px rgba(30,136,184,1)}}
+.board{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:#1a1a1a;padding:8px;border:3px solid #444;border-radius:8px;margin-bottom:15px;box-shadow:0 8px 25px rgba(0,0,0,.8)}
+.cell{aspect-ratio:1;background:#0f0f0f;border-radius:3px;border:1px solid #222;transition:all .2s}
+.cell.filled{background:linear-gradient(145deg,#e0e0e0,#c0c0c0);border:1px solid #fff;box-shadow:0 2px 6px rgba(255,255,255,.3)}
+.cell.ghost{background:rgba(224,224,224,.3);border:1px dashed #999}
+.cell.valid{background:rgba(100,255,100,.25);box-shadow:0 0 10px rgba(100,255,100,.4)}
+.cell.invalid{background:rgba(255,100,100,.25)}
+.cell.clear{animation:pop .4s forwards}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(0);opacity:0}}
+.pieces{display:flex;gap:10px;padding:12px;background:linear-gradient(145deg,#2a2a2a,#1a1a1a);border:3px solid #444;border-radius:10px;min-height:110px}
+.piece-wrap{flex:1;display:flex;justify-content:center;align-items:center;padding:10px;background:#0f0f0f;border:2px solid #444;border-radius:8px;cursor:grab;transition:transform .1s;touch-action:none}
+.piece-wrap:active{cursor:grabbing}
+.piece-wrap.dragging{opacity:.3}
+.piece{display:grid;gap:2px;pointer-events:none}
+.pc{width:20px;height:20px;background:linear-gradient(145deg,#e0e0e0,#c0c0c0);border-radius:3px;border:1px solid #fff}
+.over{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.95);display:none;justify-content:center;align-items:center;z-index:100}
 .over.show{display:flex}
-.box{background:#222;padding:30px;border-radius:10px;text-align:center}
-.btn{padding:12px 30px;margin-top:10px;font-size:16px}
-.google-btn{background:#fff;color:#000;padding:12px 25px}
-.user-bar{position:fixed;top:10px;left:10px;color:#fff}
-.menu-btn{position:fixed;top:10px;right:10px;color:#fff;font-size:22px}
+.box{background:linear-gradient(145deg,#2a2a2a,#1a1a1a);padding:40px;border:3px solid #555;border-radius:15px;text-align:center;max-width:450px;max-height:90vh;overflow-y:auto}
+.box-title{font-size:36px;color:#e0e0e0;margin-bottom:20px;letter-spacing:2px}
+.final{font-size:48px;color:#fff;margin:20px 0}
+.btn{padding:15px 40px;font-size:18px;background:linear-gradient(145deg,#444,#222);color:#e0e0e0;border:2px solid #666;border-radius:10px;cursor:pointer;font-family:Georgia,serif;font-weight:bold;margin:5px;border:none}
+.btn:hover{background:linear-gradient(145deg,#555,#333)}
+.combo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;font-weight:bold;color:#fff;text-shadow:0 0 20px #fff;opacity:0;pointer-events:none;z-index:50;transition:opacity .3s}
+.info{font-size:12px;color:#888;margin:10px 0}
+.user-bar{position:fixed;top:15px;left:15px;background:rgba(0,0,0,.9);padding:10px 15px;border-radius:8px;z-index:10;color:#e0e0e0;font-size:13px;display:flex;align-items:center;gap:10px}
+.user-photo{width:30px;height:30px;border-radius:50%}
+.menu-btn{position:fixed;top:15px;right:15px;background:rgba(0,0,0,.9);padding:10px 15px;border-radius:8px;z-index:10;color:#e0e0e0;font-size:24px;cursor:pointer}
+.lb{margin-top:20px;text-align:left;max-height:400px;overflow-y:auto}
+.lb-item{padding:10px;background:#1a1a1a;border-radius:5px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.lb-item.me{background:#2a3a2a;border:1px solid #4a6a4a}
+.lb-name{color:#e0e0e0;flex:1}
+.lb-score{color:#fff;font-weight:bold;margin-left:10px}
+.loading{color:#aaa;text-align:center;padding:20px}
+.google-btn{background:#fff;color:#333;padding:12px 30px;border:none;border-radius:5px;font-size:16px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;font-weight:500;font-family:Georgia,serif}
+.google-btn:hover{background:#f0f0f0}
 </style>
 </head>
-
 <body>
-
 <div class="game" id="g" style="display:none">
-  <div class="header">
-    <div>
-      <div class="title">BUSTER</div>
-      <div class="title-gujarati">બસ્ટર</div>
-    </div>
-    <div>
-      <div class="score" id="sc">0</div>
-      <div class="rank" id="rk">CRACKED</div>
-    </div>
-  </div>
-  <div class="board" id="bd"></div>
-  <div class="pieces" id="pc"></div>
+<div class="header">
+<div><div class="title">BUSTER</div><div class="title-gujarati">બસ્ટર</div></div>
+<div class="score-panel"><div class="score-label">Score</div><div class="score" id="sc">0</div><div class="high">Best: <span id="hi">0</span></div><div class="rank" id="rk">CRACKED</div></div>
 </div>
-
-<div class="user-bar" id="ub"></div>
-<div class="menu-btn" id="mb">☰</div>
-
+<div class="board" id="bd"></div>
+<div class="pieces" id="pc"></div>
+<div class="combo" id="cb"></div>
+</div>
+<div class="user-bar" id="ub" style="display:none"></div>
+<div class="menu-btn" id="mb" style="display:none">☰</div>
 <div class="over show" id="lg">
-  <div class="box">
-    <h2>BUSTER</h2>
-    <button class="google-btn" id="gsi">Sign in with Google</button><br>
-    <button class="btn" id="gst">Play as Guest</button>
-  </div>
+<div class="box">
+<div class="box-title">BUSTER</div>
+<div class="title-gujarati" style="margin-bottom:20px">બસ્ટર</div>
+<p class="info">Sign in to save your progress and compete!</p>
+<button class="google-btn" id="gsi">
+<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/><path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.002 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/></svg>
+Sign in with Google
+</button>
+<p class="info" style="margin-top:15px">or</p>
+<button class="btn" id="gst">Play as Guest</button>
 </div>
-
+</div>
 <div class="over" id="ov">
-  <div class="box">
-    <h2>GAME OVER</h2>
-    <div id="fn">0</div>
-    <div class="rank" id="frk"></div>
-    <button class="btn" id="rs">PLAY AGAIN</button>
-  </div>
+<div class="box">
+<div class="box-title">GAME OVER</div>
+<div class="final" id="fn">0</div>
+<div class="rank" id="frk">CRACKED</div>
+<button class="btn" id="rs">PLAY AGAIN</button>
+<button class="btn" id="lb">LEADERBOARD</button>
 </div>
-
+</div>
+<div class="over" id="lbs">
+<div class="box">
+<div class="box-title">LEADERBOARD</div>
+<div class="lb" id="ll"></div>
+<button class="btn" id="bk">BACK</button>
+</div>
+</div>
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getAuth,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {
-  getDatabase,
-  ref,
-  set,
-  get
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig={
- apiKey:"AIzaSyDwo9UxfYpDb19VV_ULdmeSGv42Bw784U4",
- authDomain:"buster-game.firebaseapp.com",
- databaseURL:"https://buster-game-default-rtdb.firebaseio.com",
- projectId:"buster-game",
- storageBucket:"buster-game.appspot.com",
- messagingSenderId:"994068443466",
- appId:"1:994068443466:web:14c834e80f0857497d51b3"
-};
-
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getDatabase(app);
-const provider=new GoogleAuthProvider();
-
-const SZ=8;
-const SH=[[[1]],[[1,1]],[[1],[1]],[[1,1,1]],[[1],[1],[1]]];
-const RK=[
- {n:'CRACKED',s:0,c:'r0'},
- {n:'CHOPPED',s:150,c:'r1'},
- {n:'LIL BRO',s:400,c:'r2'},
- {n:'LEBRON',s:800,c:'r3'},
- {n:'GOAT',s:1400,c:'r4'},
- {n:'MESSIAH',s:2200,c:'r5'},
- {n:'EXOCOSMIC',s:3500,c:'r6'}
-];
-
-let b,s,u;
-
-function isMartian(name,email){
- return email==="henildesai17@gmail.com"||name?.toLowerCase()==="henil";
-}
-
-function getRank(sc){
- if(u.m) return {n:"MARTIAN",c:"r6"};
- for(let i=RK.length-1;i>=0;i--) if(sc>=RK[i].s) return RK[i];
- return RK[0];
-}
-
-onAuthStateChanged(auth,user=>{
- if(user){
-  u={id:user.uid,n:user.displayName,email:user.email,m:isMartian(user.displayName,user.email)};
-  start();
- }
-});
-
-document.getElementById("gsi").onclick=()=>signInWithRedirect(auth,provider);
-
-getRedirectResult(auth).then(res=>{
- if(res?.user){
-  const usr=res.user;
-  u={id:usr.uid,n:usr.displayName,email:usr.email,m:isMartian(usr.displayName,usr.email)};
-  start();
- }
-});
-
-document.getElementById("gst").onclick=()=>{
- u={id:"guest_"+Date.now(),n:"Guest",m:false};
- start();
-};
-
-function start(){
- document.getElementById("lg").classList.remove("show");
- document.getElementById("g").style.display="block";
- document.getElementById("ub").textContent=u.n;
- init();
-}
-
-async function init(){
- b=Array(SZ).fill().map(()=>Array(SZ).fill(0));
- s=0;
- document.getElementById("sc").textContent=s;
- updateRank();
- drawBoard();
- genPieces();
-}
-
-function updateRank(){
- const r=getRank(s);
- document.getElementById("rk").textContent=r.n;
- document.getElementById("rk").className="rank "+r.c;
-}
-
-function drawBoard(){
- const bd=document.getElementById("bd");
- bd.innerHTML="";
- for(let i=0;i<SZ*SZ;i++){
-  const d=document.createElement("div");
-  d.className="cell";
-  bd.appendChild(d);
- }
-}
-
-function genPieces(){
- const pc=document.getElementById("pc");
- pc.innerHTML="";
- SH.slice(0,3).forEach(sh=>{
-  const w=document.createElement("div");
-  w.className="piece-wrap";
-  const p=document.createElement("div");
-  p.className="piece";
-  sh.forEach(r=>r.forEach(c=>{
-   const d=document.createElement("div");
-   if(c)d.className="pc"; else d.style.visibility="hidden";
-   p.appendChild(d);
-  }));
-  w.appendChild(p);
-  pc.appendChild(w);
- });
-}
-
-document.getElementById("rs").onclick=()=>{
- document.getElementById("ov").classList.remove("show");
- init();
-};
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import {getAuth,signInWithPopup,GoogleAuthProvider,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import {getDatabase,ref,set,get,query,orderByChild,limitToLast} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+const cfg={apiKey:"AIzaSyDwo9UxfYpDb19VV_ULdmeSGv42Bw784U4",authDomain:"buster-game.firebaseapp.com",databaseURL:"https://buster-game-default-rtdb.firebaseio.com",projectId:"buster-game",storageBucket:"buster-game.firebasestorage.app",messagingSenderId:"994068443466",appId:"1:994068443466:web:14c834e80f0857497d51b3"};
+const app=initializeApp(cfg),auth=getAuth(app),db=getDatabase(app),provider=new GoogleAuthProvider();
+const SZ=8,SH=[[[1]],[[1,1]],[[1],[1]],[[1,1,1]],[[1],[1],[1]],[[1,1],[1,1]],[[1,1,1],[1,0,0]],[[1,1,1],[0,0,1]],[[1,1,1],[0,1,0]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,1,1,1]],[[1],[1],[1],[1]],[[1,1,1],[1,0,1]],[[1,1,1,1,1]],[[1,1,1],[1,1,0]],[[1,1,1],[0,1,1]],[[1,0],[1,1],[1,0]],[[0,1],[1,1],[0,1]],[[1,1,1,1],[1,0,0,0]],[[1,1,1,1],[0,0,0,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1],[1,0],[1,0]],[[1,1],[0,1],[0,1]]],RK=[{n:'CRACKED',s:0,c:'r0'},{n:'CHOPPED',s:150,c:'r1'},{n:'LIL BRO',s:400,c:'r2'},{n:'LEBRON',s:800,c:'r3'},{n:'GOAT',s:1400,c:'r4'},{n:'MESSIAH',s:2200,c:'r5'},{n:'EXOCOSMIC',s:3500,c:'r6'}];
+let b,s,h,cr,nx,cb,lt,dg=null,u=null;
+function isM(n){return n==='Henil.'||n==='HENIL.'||n==='henil.'}
+function gR(sc,m){if(m)return{n:'MARTIAN',s:99999,c:'r6'};for(let i=RK.length-1;i>=0;i--)if(sc>=RK[i].s)return RK[i];return RK[0]}
+function uR(){const r=gR(s,u.m);document.getElementById('rk').textContent=r.n;document.getElementById('rk').className='rank '+r.c}
+onAuthStateChanged(auth,usr=>{if(usr){u={id:usr.uid,n:usr.displayName||'Player',p:usr.photoURL,m:isM(usr.displayName||'')};stG()}});
+document.getElementById('gsi').onclick=async()=>{try{const result=await signInWithPopup(auth,provider);if(result.user){u={id:result.user.uid,n:result.user.displayName||'Player',p:result.user.photoURL,m:isM(result.user.displayName||'')};stG()}}catch(e){console.log(e);alert('Sign in failed! Try guest mode.')}};
+document.getElementById('gst').onclick=()=>{const guestId='guest_'+Date.now();u={id:guestId,n:'Guest',p:null,m:false};stG()};
+document.getElementById('mb').onclick=()=>{document.getElementById('lbs').classList.add('show');rL()};
+function stG(){document.getElementById('lg').classList.remove('show');document.getElementById('g').style.display='block';document.getElementById('ub').style.display='flex';document.getElementById('mb').style.display='block';document.getElementById('ub').innerHTML=u.p?`<img src="${u.p}" class="user-photo"> ${u.n}`:`👤 ${u.n}`;ini()}
+async function ini(){b=Array(SZ).fill().map(()=>Array(SZ).fill(0));s=0;try{const snap=await get(ref(db,`scores/${u.id}`));h=u.m?99999:(snap.exists()?snap.val().s:0)}catch(e){h=0}cb=0;lt=0;document.getElementById('hi').textContent=h;document.getElementById('sc').textContent=0;uR();document.getElementById('bd').innerHTML='';for(let i=0;i<SZ*SZ;i++){const c=document.createElement('div');c.className='cell';c.dataset.i=i;document.getElementById('bd').appendChild(c)}gP();dr()}
+function rn(){const a=s>800?SH:s>400?SH.slice(0,20):SH.slice(0,15);return JSON.parse(JSON.stringify(a[Math.floor(Math.random()*a.length)]))}
+function gP(){cr=[rn(),rn(),rn()];nx=[rn(),rn(),rn()];dP()}
+function mP(sh){const p=document.createElement('div');p.className='piece';p.style.gridTemplateColumns=`repeat(${sh[0].length},1fr)`;sh.forEach(r=>r.forEach(c=>{const pc=document.createElement('div');if(c)pc.className='pc';else pc.style.visibility='hidden';p.appendChild(pc)}));return p}
+function dP(){const c=document.getElementById('pc');c.innerHTML='';cr.forEach((sh,i)=>{if(!sh)return;const w=document.createElement('div');w.className='piece-wrap';w.dataset.idx=i;w.appendChild(mP(sh));c.appendChild(w)});sD()}
+function sD(){document.querySelectorAll('.piece-wrap').forEach(w=>{w.addEventListener('mousedown',stD);w.addEventListener('touchstart',stD,{passive:false})})}
+function stD(e){const w=e.currentTarget,ix=parseInt(w.dataset.idx);if(!cr[ix])return;e.preventDefault();const iT=e.type==='touchstart',cX=iT?e.touches[0].clientX:e.clientX,cY=iT?e.touches[0].clientY:e.clientY;w.classList.add('dragging');dg={ix,sh:cr[ix],w,oY:80};chP(cX,cY-dg.oY);if(iT){document.addEventListener('touchmove',oD,{passive:false});document.addEventListener('touchend',eD)}else{document.addEventListener('mousemove',oD);document.addEventListener('mouseup',eD)}}
+function oD(e){if(!dg)return;e.preventDefault();const iT=e.type==='touchmove',cX=iT?e.touches[0].clientX:e.clientX,cY=iT?e.touches[0].clientY:e.clientY;chP(cX,cY-(iT?dg.oY:0))}
+function chP(cX,cY){const bE=document.getElementById('bd'),bR=bE.getBoundingClientRect();if(cX>=bR.left&&cX<=bR.right&&cY>=bR.top&&cY<=bR.bottom){const cW=bR.width/SZ,cH=bR.height/SZ,cl=Math.floor((cX-bR.left)/cW),rw=Math.floor((cY-bR.top)/cH);uG(rw,cl)}else clG()}
+function eD(e){if(!dg)return;const iT=e.type==='touchend',cX=iT?e.changedTouches[0].clientX:e.clientX,cY=iT?e.changedTouches[0].clientY:e.clientY,aY=cY-(iT?dg.oY:0);const bE=document.getElementById('bd'),bR=bE.getBoundingClientRect();if(cX>=bR.left&&cX<=bR.right&&aY>=bR.top&&aY<=bR.bottom){const cW=bR.width/SZ,cH=bR.height/SZ,cl=Math.floor((cX-bR.left)/cW),rw=Math.floor((aY-bR.top)/cH);if(cn(dg.sh,rw,cl)){pl(dg.sh,rw,cl,dg.ix);if(navigator.vibrate)navigator.vibrate(30)}}dg.w.classList.remove('dragging');clG();if(iT){document.removeEventListener('touchmove',oD);document.removeEventListener('touchend',eD)}else{document.removeEventListener('mousemove',oD);document.removeEventListener('mouseup',eD)}dg=null}
+function uG(r,c){clG();if(!dg)return;const sh=dg.sh,v=cn(sh,r,c);for(let i=0;i<sh.length;i++)for(let j=0;j<sh[i].length;j++)if(sh[i][j]){const cI=(r+i)*SZ+(c+j);if(cI>=0&&cI<SZ*SZ){const cl=document.querySelector(`[data-i="${cI}"]`);if(cl){cl.classList.add('ghost');cl.classList.add(v?'valid':'invalid')}}}}
+function clG(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('ghost','valid','invalid'))}
+function cn(sh,r,c){for(let i=0;i<sh.length;i++)for(let j=0;j<sh[i].length;j++)if(sh[i][j]){const br=r+i,bc=c+j;if(br>=SZ||bc>=SZ||br<0||bc<0||b[br][bc])return false}return true}
+function pl(sh,r,c,ix){for(let i=0;i<sh.length;i++)for(let j=0;j<sh[i].length;j++)if(sh[i][j])b[r+i][c+j]=1;cr[ix]=null;cl();if(cr.every(p=>!p)){cr=[...nx];nx=[rn(),rn(),rn()]}dP();dr();if(ov())en()}
+function cl(){const rw=[],cl=[];for(let r=0;r<SZ;r++)if(b[r].every(c=>c))rw.push(r);for(let c=0;c<SZ;c++)if(b.every(r=>r[c]))cl.push(c);const cls=new Set();rw.forEach(r=>{for(let c=0;c<SZ;c++)cls.add(r*SZ+c)});cl.forEach(c=>{for(let r=0;r<SZ;r++)cls.add(r*SZ+c)});if(cls.size>0){cls.forEach(i=>document.querySelector(`[data-i="${i}"]`).classList.add('clear'));setTimeout(()=>{rw.forEach(r=>b[r].fill(0));cl.forEach(c=>{for(let r=0;r<SZ;r++)b[r][c]=0});const ln=rw.length+cl.length,nw=Date.now();cb=nw-lt<2000?cb+1:1;lt=nw;s+=ln*10+(cb>1?(cb-1)*20:0);if(cb>1)shC();if(s>h&&!u.m){h=s;document.getElementById('hi').textContent=h}document.getElementById('sc').textContent=s;uR();dr();if(navigator.vibrate)navigator.vibrate(40)},300)}else cb=0}
+function shC(){const e=document.getElementById('cb');e.textContent=`${cb}x COMBO!`;e.style.opacity=1;setTimeout(()=>e.style.opacity=0,1000)}
+function dr(){document.querySelectorAll('.cell').forEach((c,i)=>{const r=Math.floor(i/SZ),cl=i%SZ;c.className='cell';if(b[r][cl])c.classList.add('filled')})}
+function ov(){for(let p of cr){if(!p)continue;for(let r=0;r<SZ;r++)for(let c=0;c<SZ;c++)if(cn(p,r,c))return false}return true}
+async function en(){document.getElementById('fn').textContent=s;const r=gR(s,u.m);document.getElementById('frk').textContent=r.n;document.getElementById('frk').className='rank '+r.c;await svS();document.getElementById('ov').classList.add('show')}
+async function svS(){const fS=u.m?s:Math.max(s,h);try{await set(ref(db,`scores/${u.id}`),{n:u.n,s:fS,m:u.m,t:Date.now()})}catch(e){}}
+async function rL(){const ls=document.getElementById('ll');ls.innerHTML='<div class="loading">Loading...</div>';try{const q=query(ref(db,'scores'),orderByChild('s'),limitToLast(50));const snap=await get(q);const sc=[];snap.forEach(c=>sc.push(c.val()));sc.sort((a,b)=>b.s-a.s);ls.innerHTML='';sc.forEach((it,i)=>{const d=document.createElement('div');d.className='lb-item'+(it.n===u.n?' me':'');const r=gR(it.s,it.m);d.innerHTML=`<span class="lb-name">${i+1}. ${it.n} <span class="rank ${r.c}" style="font-size:9px;padding:2px 6px">${r.n}</span></span><span class="lb-score">${it.s}</span>`;ls.appendChild(d)})}catch(e){ls.innerHTML='<div class="info">Error loading leaderboard</div>'}}
+document.getElementById('rs').onclick=()=>{document.getElementById('ov').classList.remove('show');ini()};
+document.getElementById('lb').onclick=()=>{document.getElementById('ov').classList.remove('show');rL();document.getElementById('lbs').classList.add('show')};
+document.getElementById('bk').onclick=()=>document.getElementById('lbs').classList.remove('show');
 </script>
 </body>
 </html>
